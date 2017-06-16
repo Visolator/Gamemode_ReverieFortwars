@@ -1,0 +1,205 @@
+//linearAlgebra.cs
+//amde
+
+//generalized vector operations: built-in functions only work for 3d vectors
+
+function gVectorAdd(%vecA, %vecB)
+{
+	%wc = getWordCount(%vecA);
+	for(%i = 0; %i < %wc; %i++)
+	{
+		%vecA = setWord(%vecA, %i, getWord(%vecA, %i) + getWord(%vecB, %i));
+	}
+	return %vecA;
+}
+
+function gVectorSub(%vecA, %vecB)
+{
+	%wc = getWordCount(%vecA);
+	for(%i = 0; %i < %wc; %i++)
+	{
+		%vecA = setWord(%vecA, %i, getWord(%vecA, %i) - getWord(%vecB, %i));
+	}
+	return %vecA;
+}
+
+function gVectorDot(%vecA, %vecB)
+{
+	%wc = getWordCount(%vecA);
+	for(%i = 0; %i < %wc; %i++)
+	{
+		%sum+= getWord(%vecA, %i) * getWord(%vecB, %i);
+	}
+	return %sum;
+}
+
+function gVectorScale(%vec, %scale)
+{
+	%wc = getWordCount(%vec);
+	for(%i = 0; %i < %wc; %i++)
+	{
+		%vec = setWord(%vec, %i, round(%scale * getWord(%vec, %i)));
+	}
+	return %vec;
+}
+
+function gVectorLength(%vec)
+{
+	%wc = getWordCount(%vec);
+	for(%i = 0; %i < %wc; %i++)
+	{
+		%sum+= mPow(getWord(%vec, %i), 2);
+	}
+	return mSqrt(%sum);
+}
+
+function gVectorNormalize(%vec)
+{
+	return gVectorScale(%vec, 1 / gVectorLength(%vec));
+}
+
+//matrix operations
+
+function matrixGetEntry(%M, %i, %j)
+{
+	return getWord(getRecord(%M, %i), %j);
+}
+
+function matrixSetEntry(%M, %i, %j, %entry)
+{
+	return setRecord(%M, %i, setWord(getRecord(%M, %i), %j, %entry));
+}
+
+function matrixGetRow(%M, %row)
+{
+	return getRecord(%M, %row);
+}
+
+function matrixGetCol(%M, %col)
+{
+	%wc = getRecordCount(%M);
+	for(%i = 0; %i < %wc; %i++)
+	{
+		%column = %column SPC getWord(getRecord(%M, %i), %col);
+	}
+	return trim(%column);
+}
+
+function matrixGetRowCount(%M)
+{
+	return getRecordCount(%m);
+}
+
+function matrixGetColCount(%M)
+{
+	return getWordCount(getRecord(%M, 0));
+}
+
+function matrixAdd(%A, %B)
+{
+	%wc = getRecordCount(%A);
+	for(%i = 0; %i < %wc; %i++)
+	{
+		%A = setRecord(%A, %i, gVectorAdd(getRecord(%A, %i), getRecord(%B, %i)));
+	}
+	return %A;
+}
+
+function matrixSub(%A, %B)
+{
+	%wc = getRecordCount(%A);
+	for(%i = 0; %i < %wc; %i++)
+	{
+		%A = setRecord(%A, %i, gVectorSub(getRecord(%A, %i), getRecord(%B, %i)));
+	}
+	return %A;
+}
+
+function matrixTrace(%A)
+{
+	%m = getRecordCount(%A);
+	for(%i = 0; %i < %m; %i++)
+	{
+		%sum+= getWord(getRecord(%A, %i), %i);
+	}
+	return %sum;
+}
+
+//%A must be a matrix, %B can be a matrix or a scalar
+//returns the matrix %A*%B
+function matrixMult(%A, %B)
+{
+	%m = getRecordCount(%A);
+	if(%B $= %B * 1)
+	{
+		//scalar multiplication
+		for(%i = 0; %i < %m; %i++)
+		{
+			%A = setRecord(%A, %i, gVectorScale(getRecord(%A, %i), %B));
+		}
+		return %A;
+	}
+	//matrix multiplication
+	%n = matrixGetColCount(%B);
+	for(%i = 0; %i < %m; %i++)
+	{
+		for(%j = 0; %j < %n; %j++)
+		{
+			%entry = gVectorDot(getRecord(%A, %i), matrixGetCol(%B, %j));
+			%C = setRecord(%C, %i, setWord(getRecord(%C, %i), %j, %entry));
+		}
+	}
+	return %C;
+}
+
+// gauss-jordan elimination
+
+function matrixRowMult(%M, %row, %mult)
+{
+	return setRecord(%M, %row, gVectorScale(getRecord(%M, %row), %mult));
+}
+
+function matrixRowAdd(%M, %rowA, %rowB, %mult)
+{
+	return setRecord(%M, %rowA, gVectorAdd(gVectorAdd(getRecord(%M, %rowA), gVectorScale(getRecord(%M, %rowB), %mult))));
+}
+
+function matrixRowSwitch(%M, %rowA, %rowB)
+{
+	%temp = getRecord(%M, %rowA);
+	%M = setRecord(%M, %rowA, getRecord(%M, %rowB));
+	return setRecord(%M, %rowB, %temp);
+}
+
+function createLeadingOne(%M, %i, %j)
+{
+	%entry = matrixGetEntry(%M, %i, %j);
+	if(%entry != 1)
+	{
+		if(%entry == 0)
+		{
+			error("division by 0");
+			return %M;
+		}
+		%M = matrixRowMult(%M, %i, 1 / %entry);
+	}
+	%rows = getRecordCount(%M);
+	for(%r = 0; %r < %rows; %r++)
+	{
+		if(%r == %i)
+		{
+			continue;
+		}
+		%entry = matrixGetEntry(%M, %r, %j);
+		if(%entry != 0)
+		{
+			%M = matrixRowAdd(%M, %r, %i, -1 * %entry);
+		}
+	}
+	return %M;
+}
+
+function matrixRowReduce(%M)
+{
+	
+}

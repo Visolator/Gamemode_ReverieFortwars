@@ -1,0 +1,45 @@
+ADDON Ai_Mutalid
+ADDON Brick_2x_Cube
+ADDON Brick_Arch
+ADDON Brick_Corners
+ADDON Brick_Doors
+ADDON Brick_Large_Cubes
+ADDON Brick_Pole
+ADDON Brick_Treasure_Chest
+ADDON Emote_Alarm
+ADDON Emote_Confusion
+ADDON Emote_Hate
+ADDON Emote_Love
+ADDON Light_Ambient
+ADDON Light_Animated
+ADDON Light_Basic
+ADDON Particle_Basic
+ADDON Particle_FX_Cans
+ADDON Particle_Player
+ADDON Particle_Tools
+ADDON Print_1x2f_Default
+ADDON Print_2x2f_Default
+ADDON Print_2x2r_Default
+ADDON Print_Letters_Default
+ADDON Support_Doors
+//ADDON Support_Player_Persistence
+ADDON Vehicle_AdvancedHorse
+ADDON GameMode_ReverieFortWars
+ADDON Support_Autosaver
+ADDON Support_NewHealth
+
+//Remove for later
+ADDON Server_ChatEval
+ADDON System_Essentials
+
+$EnvGuiServer::SimpleMode false
+$EnvGuiServer::SkyFile Add-Ons/Sky_Blue2/Blue2.dml
+$EnvGuiServer::WaterFile Add-Ons/Water_Lava/lava.water
+$EnvGuiServer::GroundFile Add-Ons/Ground_Lava/groundLava.ground
+$EnvGuiServer::VisibleDistance 1000
+$EnvGuiServer::FogDistance 100
+
+$MiniGame::Enabled false
+$Server::GhostLimit 524288
+
+$Server::WelcomeMessage \c2Welcome, %1, to Reverie Fort Wars.

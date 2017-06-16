@@ -1,0 +1,7 @@
+Reverie Fort Wars combines elements from Fort Wars and Fantasy RPG servers to create a team-oriented player-versus-player survival game.
+
+Credits:
+Amade (scripting, sword models), Tingalz (pickaxe models), Phydeoux (ribcage model)
+
+Requirements:
+Execute: Brick_Large_Cubes, Vehicle_AdvancedHorse, AI_Mutalid

@@ -1,0 +1,125 @@
+for(%file = findFirstFile("Add-Ons/GameMode_ReverieFortWars/sounds/footsteps/*.wav"); isFile(%file); %file = findNextFile("Add-Ons/GameMode_ReverieFortWars/sounds/footsteps/*.wav"))
+{
+	%name = fileBase(%file);
+	eval("datablock AudioProfile(" @ %name @ "){ filename = \"" @ %file @ "\"; description = AudioClose3d; preload = true; };");
+}
+
+$StepSounds["Carpet"] = 5;
+$StepSounds["Dirt"] = 6;
+$StepSounds["Grass"] = 7;
+$StepSounds["JabuJabu"] = 7;
+$StepSounds["Sand"] = 5;
+$StepSounds["Stone"] = 6;
+$StepSounds["Wood"] = 5;
+
+function Player::colorcheck_playback(%obj)
+{
+	%type = $RFW::ResourceByColor[%obj.touchColor];
+	switch$(%type)
+	{
+		case "Plant matter": %type = "Grass";
+		case "Snow": %type = "Sand";
+		case "Flesh": %type = "JabuJabu";
+		case "Surtra": %type = "Stone";
+		case "Calcite": %type = "Stone";
+		case "Nithlite": %type = "Stone";
+		case "Sanguite": %type = "Stone";
+		case "Sinnite": %type = "Stone";
+		case "Crystal": %type = "Stone";
+		case "Glass": %type = "Stone";
+		case "Cloth": %type = "Carpet";
+	}
+	if(!$StepSounds[%type])
+	{
+		%type = "Dirt";
+	}
+	%sound = "OOT_Steps_" @ %type @ getRandom(1, $StepSounds[%type]);
+	return %sound;
+}
+
+//! The package to handle when the player walks, and then play a noise.
+
+package peggsteps
+{
+	//## When any creature spawns, start peggstepping.
+	function Armor::onNewDatablock(%this, %obj)
+	{
+		if(%this.rideable)
+		{
+			return parent::onNewDatablock(%this, %obj);
+		}
+		%obj.isSlow = 0;
+		%obj.peggstep = schedule(50,0,PeggFootsteps,%obj);
+		return parent::onNewDatablock(%this, %obj);
+	}
+
+	function Armor::onTrigger(%data,%obj,%slot,%val)
+	{
+		if(%slot == 3)
+		{
+			%obj.isProning = %val;
+		}
+		return Parent::onTrigger(%data,%obj,%slot,%val);
+	}
+
+	function Armor::onEnterLiquid(%data, %obj)
+	{
+		%obj.isSwimming = true;
+		return Parent::onEnterLiquid(%data, %obj);
+	}
+	function Armor::onLeaveLiquid(%data, %obj)
+	{
+		%obj.isSwimming = false;
+		return Parent::onLeaveLiquid(%data,%obj);
+	}
+};
+activatepackage(peggsteps);
+
+//## Drop some rad peggstep noise in here!
+function PeggFootsteps(%obj)
+{
+	if(isObject(%obj))
+	{
+		cancel(%obj.peggstep);
+		%pos = %obj.getPosition();
+		%vel = %obj.getVelocity();
+		%posA = %obj.getPosition();
+		initContainerBoxSearch(%posA, "1.25 1.25 0.1", $TypeMasks::fxBrickObjectType | $Typemasks::TerrainObjectType);
+		%colA = containerSearchNext();
+		%posB = vectorAdd(%posA,"0 0 0.5");
+		initContainerBoxSearch(%posB, "1.25 1.25 0.1", $TypeMasks::fxBrickObjectType | $Typemasks::TerrainObjectType);
+		%colB = containerSearchNext();
+		if(isObject(%colA) && %colA != %colB)
+		{	
+			if(%colA.getClassName() $= "fxDTSbrick")
+			{
+				%obj.touchcolor = %colA.getColorId();
+			}
+			if(vectorLen(setWord(%vel, 2, 0)) > 0)
+			{
+				%sound = %obj.colorcheck_playback();
+				serverplay3d(%sound, %obj.getHackPosition());
+			}
+		}
+		%obj.peggstep = schedule(320,0,PeggFootsteps,%obj);
+	}
+}
+
+function PeggJumpSounds(%obj)
+{
+	if(!isObject(%obj))
+	{
+		return;
+	}
+	cancel(%obj.peggJumpSounds);
+	%pvel = %obj.prevVelocity;
+	%cvel = %obj.getVelocity();
+	%obj.prevVelocity = %cvel;
+	%pz = getWord(%pvel, 2);
+	%cz = getWord(%cvel, 2);
+	if(%pz < -2 && %cz > -1)
+	{
+		
+	}
+	%obj.peggJumpSounds = schedule(50, 0, PeggJumpSounds, %obj);
+}
